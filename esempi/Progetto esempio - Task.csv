@@ -1,0 +1,8 @@
+﻿"ID";"Titolo";"Tipo";"Descrizione";"Responsabile";"Data inizio";"Data fine";"Giorni lavorativi";"Avanzamento (%)";"Predecessori"
+"1";"Progetto ";"Principale";"";"Alessandro Puglisi";"2026-10-05";"2026-11-13";"30";"50";""
+"2";"Analisi";"Analisi";"";"Stefano Spiller";"2026-10-05";"2026-10-11";"5";"50";"1"
+"3";"Sviluppo 1";"Sviluppo";"";"Salvatore Esposito";"2026-10-12";"2026-11-06";"20";"10";"2"
+"4";"Sviluppo 2";"Sviluppo";"";"Simone Caporello";"2026-10-12";"2026-11-06";"20";"15";"2"
+"5";"Test";"Test";"";"Salvatore Esposito";"2026-11-12";"2026-11-18";"5";"0";"7|6"
+"6";"Sviluppo 3";"Sviluppo";"";"Salvatore Esposito";"2026-11-09";"2026-11-11";"3";"0";"3"
+"7";"Sviluppo 4";"Sviluppo";"";"Simone Caporello";"2026-11-09";"2026-11-11";"3";"0";"4"

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1428" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <title>Manuale operativo — WBS Manager</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #17243a;
+        background: #f1f5f9;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      .hero {
+        padding: 34px max(24px, calc((100vw - 920px) / 2));
+        color: #f8fafc;
+        background:
+          radial-gradient(ellipse at 85% 25%, rgb(31 73 100 / 40%), transparent 38%),
+          linear-gradient(135deg, #172b4d, #0b1428);
+      }
+      .brand { display: flex; align-items: center; gap: 13px; }
+      .brand img { width: 46px; height: 46px; border-radius: 13px; }
+      .brand strong { display: block; color: #f8fafc; font-size: 14px; letter-spacing: .15em; }
+      .brand span { display: block; margin-top: 4px; color: #9fb1ca; font-size: 10px; letter-spacing: .12em; }
+      .hero h1 { margin: 35px 0 8px; font-size: clamp(32px, 6vw, 48px); letter-spacing: -.04em; }
+      .hero p { max-width: 670px; margin: 0; color: #c5d2e2; font-size: 16px; line-height: 1.7; }
+      .layout { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 32px; width: min(100% - 40px, 980px); margin: 30px auto 64px; }
+      nav { position: sticky; top: 20px; align-self: start; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+      nav strong { display: block; margin: 0 8px 8px; color: #64748b; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+      nav a { display: block; padding: 7px 8px; border-radius: 6px; color: #475569; font-size: 12px; text-decoration: none; }
+      nav a:hover { color: #0f766e; background: #f0fdfa; }
+      article { display: grid; gap: 16px; min-width: 0; }
+      section { scroll-margin-top: 20px; padding: 23px 26px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 3px 12px rgb(15 23 42 / 3%); }
+      h2 { margin: 0 0 13px; color: #172b4d; font-size: 19px; }
+      h3 { margin: 20px 0 7px; color: #243b5a; font-size: 14px; }
+      p, li { color: #475569; font-size: 13px; line-height: 1.75; }
+      p { margin: 8px 0; }
+      ul, ol { margin: 8px 0; padding-left: 22px; }
+      li + li { margin-top: 4px; }
+      strong { color: #26364d; }
+      kbd { padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; color: #334155; background: #f8fafc; font: 11px "Segoe UI", sans-serif; white-space: nowrap; }
+      code { padding: 2px 5px; border-radius: 4px; color: #0f766e; background: #f0fdfa; font-size: 12px; }
+      .note { margin-top: 12px; padding: 11px 14px; border-left: 3px solid #14b8a6; border-radius: 0 7px 7px 0; background: #f0fdfa; }
+      .note p { margin: 0; }
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th, td { padding: 9px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+      th { color: #334155; background: #f8fafc; font-weight: 600; }
+      td { color: #475569; line-height: 1.6; }
+      a { color: #0f766e; }
+      footer { padding-top: 13px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px; }
+      footer a { display: inline-block; margin-top: 5px; }
+      @media (max-width: 680px) {
+        .hero { padding: 24px 20px; }
+        .layout { grid-template-columns: 1fr; gap: 16px; width: min(100% - 24px, 600px); margin-top: 14px; }
+        nav { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        nav strong { grid-column: 1 / -1; }
+        section { padding: 19px; }
+      }
+      @media print {
+        :root { background: #fff; }
+        .hero { padding: 18px 0; color: #17243a; background: #fff; }
+        .hero p, .brand span { color: #475569; }
+        .layout { display: block; width: 100%; margin: 0; }
+        nav { display: none; }
+        article { gap: 10px; }
+        section { break-inside: avoid; padding: 14px 0; border: 0; box-shadow: none; }
+        p, li { font-size: 10pt; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="brand">
+        <img src="./icon.svg" alt="" />
+        <div><strong>WBS MANAGER</strong><span>MANUALE OPERATIVO</span></div>
+      </div>
+      <h1>Organizza il progetto, passo dopo passo.</h1>
+      <p>Guida pratica per creare una WBS, collegare le attività, monitorare le scadenze e condividere i risultati.</p>
+    </header>
+    <div class="layout">
+      <nav aria-label="Indice del manuale">
+        <strong>In questa guida</strong>
+        <a href="#iniziare">Iniziare</a>
+        <a href="#attivita">Attività</a>
+        <a href="#dipendenze">Dipendenze</a>
+        <a href="#viste">Viste e filtri</a>
+        <a href="#salvataggio">Salvataggio</a>
+        <a href="#import-export">Importa ed esporta</a>
+        <a href="#report-immagini">Report e immagini</a>
+        <a href="#versioni">Versioni</a>
+        <a href="#scorciatoie">Scorciatoie</a>
+        <a href="#autore">Autore</a>
+      </nav>
+      <article>
+        <section id="iniziare">
+          <h2>1. Iniziare un progetto</h2>
+          <ol>
+            <li>Seleziona <strong>Progetto → Nuovo progetto</strong> per partire da una lavagna vuota, oppure <strong>Apri progetto</strong> per continuare un lavoro salvato.</li>
+            <li>Scrivi il nome del progetto nel campo accanto al pulsante <strong>Salva</strong>; conferma con <kbd>Invio</kbd> o uscendo dal campo, oppure annulla la modifica con <kbd>Esc</kbd>.</li>
+            <li>Premi <strong>+ Nuovo task</strong> per aggiungere la prima attività. Il task viene creato sulla lavagna e selezionato.</li>
+          </ol>
+          <p>Il menu <strong>Aiuto</strong>, all'estrema destra della barra, permette di riaprire questo manuale e consultare i contatti dell'autore.</p>
+          <div class="note"><p>Se il progetto corrente contiene modifiche non salvate, prima di aprirne o crearne un altro puoi salvarle, scartarle oppure annullare l'operazione.</p></div>
+        </section>
+
+        <section id="attivita">
+          <h2>2. Creare e modificare le attività</h2>
+          <p>Fai clic su un'attività per selezionarla. Il pannello a destra mostra i campi modificabili.</p>
+          <ul>
+            <li><strong>Titolo e tipo:</strong> descrivono l'attività e la sua fase. Sono disponibili Principale, Analisi, Progettazione, Sviluppo, Test, Collaudo e Rilascio.</li>
+            <li><strong>Descrizione e responsabile:</strong> aggiungono contesto e assegnazione. Il responsabile viene usato anche nella vista Risorse.</li>
+            <li><strong>Date:</strong> imposta inizio e fine. La data finale deve essere uguale o successiva a quella iniziale.</li>
+            <li><strong>Avanzamento:</strong> indica il completamento in percentuale da 0 a 100. I task Principali riepilogano l'avanzamento dei discendenti.</li>
+          </ul>
+          <p>Per eliminare un task, selezionalo e premi <kbd>Canc</kbd> o <kbd>Backspace</kbd>. I collegamenti collegati al task vengono rimossi insieme ad esso.</p>
+        </section>
+
+        <section id="dipendenze">
+          <h2>3. Collegare le attività</h2>
+          <p>Trascina da un punto di ancoraggio sul bordo del task di partenza fino a un punto sul bordo del task successivo. Le frecce rappresentano l'ordine logico delle dipendenze.</p>
+          <ul>
+            <li>Per cambiare l'aspetto di tutti i collegamenti, usa il selettore <strong>Frecce</strong> nella vista Grafo: <strong>Curve</strong>, <strong>Rette</strong> o <strong>Angoli</strong>.</li>
+            <li>Una freccia rossa animata segnala un conflitto di date: l'attività successiva inizia prima della fine della precedente.</li>
+            <li>Le dipendenze duplicate, circolari e verso sé stessi non sono consentite.</li>
+          </ul>
+          <p>Per eliminare una freccia, selezionala e premi <kbd>Canc</kbd> o <kbd>Backspace</kbd>. La scelta dello stile delle frecce viene salvata nel progetto.</p>
+        </section>
+
+        <section id="viste">
+          <h2>4. Viste, filtri e monitoraggio</h2>
+          <h3>Grafo</h3>
+          <p>La lavagna mostra attività e dipendenze. Trascina i task per disporli; usa i controlli per ingrandire, ridurre o adattare la vista. La minimappa aiuta a orientarsi nei progetti più ampi.</p>
+          <h3>Gantt</h3>
+          <p>Mostra le attività sulla linea temporale. Scegli una scala giornaliera, settimanale o mensile. Trascina una barra per spostare le date o i bordi per cambiarne durata; seleziona un task e usa la matita per modificare date e avanzamento.</p>
+          <h3>Risorse</h3>
+          <p>Raggruppa le attività assegnate per responsabile e riepiloga giorni lavorativi, picchi di attività e intervalli sovrapposti. Le sovrapposizioni sono informative e non rappresentano da sole un sovraccarico.</p>
+          <h3>Ricerca e filtri</h3>
+          <p>Nel menu <strong>Filtri</strong>, a destra del pulsante <strong>+ Nuovo task</strong>, cerca per titolo, descrizione o responsabile e filtra per avanzamento o ritardo. Nel grafo gli elementi che non corrispondono restano visibili ma attenuati.</p>
+        </section>
+
+        <section id="salvataggio">
+          <h2>5. Salvare e recuperare il lavoro</h2>
+          <ul>
+            <li>Usa <strong>Salva</strong> o <kbd>Ctrl</kbd> + <kbd>S</kbd> per salvare il progetto; la prima volta scegli un percorso. La cartella suggerita è <code>Documenti\WBS Manager</code>.</li>
+            <li>Usa <strong>Salva con nome</strong> o <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> per salvare una copia in un altro percorso.</li>
+            <li>Lo stato nella barra indica se ci sono modifiche non salvate. Una bozza di recupero viene mantenuta automaticamente e proposta al successivo avvio dopo una modifica.</li>
+            <li><strong>Annulla</strong> e <strong>Ripeti</strong> nel menu Modifica, oppure <kbd>Ctrl</kbd> + <kbd>Z</kbd> e <kbd>Ctrl</kbd> + <kbd>Y</kbd>, gestiscono le ultime 50 operazioni.</li>
+          </ul>
+        </section>
+
+        <section id="import-export">
+          <h2>6. Importare ed esportare</h2>
+          <h3>CSV</h3>
+          <p><strong>Progetto → Esporta CSV</strong> genera un file UTF-8 con separatore <code>;</code>, compatibile con Excel configurato in italiano. L'importazione aggiunge le attività al progetto corrente senza sostituire quelle esistenti.</p>
+          <p>Per importare le dipendenze mantieni le intestazioni e il loro ordine, compila un ID univoco per ogni riga e inserisci nella colonna <strong>Predecessori</strong> gli ID dei task precedenti separati da <code>|</code>. Il titolo è obbligatorio; le date devono essere nel formato <code>yyyy-MM-dd</code>. Il file viene controllato prima dell'importazione, quindi eventuali righe non valide non producono un'importazione parziale.</p>
+        </section>
+
+        <section id="report-immagini">
+          <h2>7. Report e immagini</h2>
+          <ul>
+            <li><strong>Report → Genera report PDF</strong> prepara un riepilogo, il diagramma Gantt e i dati delle risorse in formato A4 orizzontale.</li>
+            <li><strong>Report → Esporta vista JPG</strong> esporta la vista attualmente selezionata: Grafo, Gantt o Risorse.</li>
+          </ul>
+        </section>
+
+        <section id="versioni">
+          <h2>8. Versioni</h2>
+          <p>Salva il progetto nel formato <code>.wbsm</code>, un archivio ZIP che contiene lo stato corrente, il manifest e gli snapshot delle versioni. Gli snapshot hanno un nome basato sul numero di versione, per esempio <code>versioni/versione_1_1.json</code> e <code>versioni/versione_1_2.json</code>. Gli archivi creati con le versioni precedenti dell'app restano apribili; anche i file <code>.json</code> di progetto legacy possono essere convertiti con <strong>Salva con nome</strong>.</p>
+          <p>Accanto al nome del progetto è sempre visibile un indicatore: mostra la versione di lavoro quando lo stato corrisponde all'ultimo snapshot, oppure segnala che ci sono modifiche successive non ancora salvate come versione.</p>
+          <ol>
+            <li>Dal menu <strong>Versioni → Imposta baseline 1.0</strong> salva il riferimento iniziale del progetto. La baseline non viene sovrascritta.</li>
+            <li>Quando vuoi fissare un nuovo stato, scegli <strong>Versioni → Crea nuova versione</strong> e aggiungi una nota; i numeri proseguono come 1.1, 1.2 e così via.</li>
+            <li><strong>Versioni → Elenco versioni</strong> apre la lista degli snapshot salvati, con numero, data e nota associata. Da qui puoi anche scegliere <strong>Ripristina come nuova versione</strong>.</li>
+            <li>In <strong>Versioni → Confronta o ripristina</strong> seleziona due snapshot per vedere attività aggiunte/rimosse, variazioni di campi e dipendenze. Puoi ripristinare qualsiasi snapshot, baseline inclusa, come nuova versione senza cancellare la storia.</li>
+          </ol>
+          <p>Ogni snapshot è una copia autonoma del progetto; le modifiche di lavoro non creano versioni finché non lo richiedi.</p>
+          <p>Il JSON contenuto in ogni snapshot include attività, posizioni, dipendenze e stile delle frecce. I file delle versioni precedenti vengono aperti con valori predefiniti per i campi mancanti.</p>
+        </section>
+
+        <section id="scorciatoie">
+          <h2>9. Scorciatoie e segnali visivi</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Azione</th><th>Scorciatoia</th></tr></thead>
+              <tbody>
+                <tr><td>Nuovo progetto</td><td><kbd>Ctrl</kbd> + <kbd>N</kbd></td></tr>
+                <tr><td>Apri progetto</td><td><kbd>Ctrl</kbd> + <kbd>O</kbd></td></tr>
+                <tr><td>Salva progetto</td><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td></tr>
+                <tr><td>Salva con nome</td><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></td></tr>
+                <tr><td>Annulla / Ripeti</td><td><kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Ctrl</kbd> + <kbd>Y</kbd></td></tr>
+                <tr><td>Elimina task o collegamento selezionato</td><td><kbd>Canc</kbd> o <kbd>Backspace</kbd></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul>
+            <li><strong>Bordo rosso e indicazione “In ritardo”:</strong> data finale passata e task non completato.</li>
+            <li><strong>Freccia rossa animata:</strong> conflitto tra la fine del predecessore e l'inizio del successore.</li>
+          </ul>
+        </section>
+
+        <section id="autore">
+          <h2>10. Autore e contatti</h2>
+          <p><strong>Alessandro Puglisi</strong></p>
+          <p>
+            <a href="mailto:alessandro.puglisi@eng.it">alessandro.puglisi@eng.it</a>
+          </p>
+        </section>
+      </article>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1428" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <title>WBS Manager</title>
+    <style>
+      #startup-screen {
+        position: fixed;
+        z-index: 10000;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        color: #f8fafc;
+        background:
+          radial-gradient(ellipse at 76% 48%, rgb(31 73 100 / 28%), transparent 40%),
+          radial-gradient(ellipse at 22% 95%, rgb(20 184 166 / 10%), transparent 38%),
+          #0b1428;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        transition: opacity 280ms ease, visibility 280ms ease;
+      }
+      #startup-screen::before {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgb(148 163 184 / 18%) 0.7px, transparent 0.7px);
+        background-size: 24px 24px;
+        content: "";
+        mask-image: linear-gradient(90deg, transparent, #000 60%, #000);
+        opacity: 0.24;
+      }
+      #startup-screen.startup-screen--ready {
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .startup-layout {
+        position: relative;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        width: min(100% - 64px, 1040px);
+        min-height: min(660px, 84vh);
+        padding: 32px 0 24px;
+      }
+      .startup-brand,
+      .startup-brand__name,
+      .startup-footer,
+      .startup-progress__meta {
+        display: flex;
+        align-items: center;
+      }
+      .startup-brand { gap: 14px; }
+      .startup-brand img {
+        width: 52px;
+        height: 52px;
+        border: 1px solid rgb(148 163 184 / 20%);
+        border-radius: 15px;
+        box-shadow: 0 8px 28px rgb(0 0 0 / 24%);
+      }
+      .startup-brand__name { flex-direction: column; align-items: flex-start; gap: 3px; }
+      .startup-brand__name strong { font-size: 15px; letter-spacing: 0.16em; }
+      .startup-brand__name span,
+      .startup-footer,
+      .startup-eyebrow,
+      .startup-progress__meta {
+        color: #94a3b8;
+        font-size: 10px;
+        letter-spacing: 0.13em;
+      }
+      .startup-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 36px;
+        padding: 30px 0 24px;
+      }
+      .startup-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: #6ee7cf;
+        font-weight: 600;
+      }
+      .startup-eyebrow::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #4de0c1;
+        box-shadow: 0 0 14px #4de0c1;
+        content: "";
+      }
+      .startup-copy h1 {
+        margin: 22px 0 13px;
+        font-size: clamp(38px, 5.2vw, 62px);
+        font-weight: 600;
+        letter-spacing: -0.055em;
+        line-height: 1.04;
+      }
+      .startup-copy h1 em {
+        color: #4de0c1;
+        font-style: normal;
+      }
+      .startup-copy > p {
+        max-width: 390px;
+        margin: 0;
+        color: #aab8cb;
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      .startup-progress { width: min(100%, 330px); margin-top: 35px; }
+      .startup-progress__track {
+        height: 3px;
+        overflow: hidden;
+        border-radius: 3px;
+        background: rgb(148 163 184 / 18%);
+      }
+      .startup-progress__track span {
+        display: block;
+        width: 38%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #14b8a6, #7cebd2);
+        box-shadow: 0 0 13px rgb(77 224 193 / 50%);
+        animation: startup-progress 1.6s ease-in-out infinite;
+      }
+      .startup-progress__meta { justify-content: space-between; margin-top: 11px; letter-spacing: 0.04em; }
+      .startup-progress__meta span:first-child { color: #cbd5e1; }
+      .startup-visual {
+        position: relative;
+        display: grid;
+        min-height: 330px;
+        place-items: center;
+        isolation: isolate;
+      }
+      .startup-visual::before,
+      .startup-visual::after {
+        position: absolute;
+        z-index: -1;
+        border: 1px solid rgb(125 211 252 / 9%);
+        border-radius: 50%;
+        content: "";
+      }
+      .startup-visual::before { width: 330px; height: 330px; }
+      .startup-visual::after { width: 250px; height: 250px; border-color: rgb(77 224 193 / 12%); }
+      .startup-diagram { position: relative; width: 330px; height: 260px; }
+      .startup-diagram__lines {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .startup-diagram__lines path {
+        fill: none;
+        stroke: #6683a8;
+        stroke-linecap: round;
+        stroke-width: 2;
+        opacity: 0.72;
+      }
+      .startup-card {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 13px 15px;
+        border: 1px solid rgb(148 163 184 / 22%);
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgb(32 49 75 / 96%), rgb(20 34 56 / 96%));
+        box-shadow: 0 12px 28px rgb(0 0 0 / 22%);
+        animation: startup-float 5s ease-in-out infinite;
+      }
+      .startup-card--root { top: 10px; left: 93px; width: 144px; animation-delay: -1.5s; }
+      .startup-card--left { bottom: 18px; left: 0; animation-delay: -3s; }
+      .startup-card--middle { bottom: 0; left: 112px; animation-delay: -0.8s; }
+      .startup-card--right { right: 0; bottom: 18px; animation-delay: -2.2s; }
+      .startup-card__icon {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        flex: 0 0 32px;
+        place-items: center;
+        border-radius: 9px;
+        color: #083b45;
+        background: linear-gradient(145deg, #4de0c1, #14b8a6);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .startup-card--left .startup-card__icon { color: #e9f7ff; background: linear-gradient(145deg, #67c7ff, #3295ed); }
+      .startup-card--right .startup-card__icon { color: #442d0c; background: linear-gradient(145deg, #ffd078, #f4a93e); }
+      .startup-card__text { display: grid; gap: 5px; white-space: nowrap; }
+      .startup-card__text strong { color: #e5edf7; font-size: 11px; font-weight: 600; }
+      .startup-card__text span { color: #94a3b8; font-size: 9px; }
+      .startup-card--root .startup-card__text strong { font-size: 12px; }
+      .startup-footer { justify-content: space-between; gap: 14px; padding-top: 16px; border-top: 1px solid rgb(148 163 184 / 14%); }
+      .startup-footer span:last-child { color: #64748b; }
+      .startup-author { display: grid; justify-items: end; gap: 4px; letter-spacing: .04em; }
+      .startup-author a { color: #94a3b8; text-decoration: none; }
+      .startup-author a:hover { color: #6ee7cf; }
+      @keyframes startup-progress {
+        from { transform: translateX(-110%); }
+        to { transform: translateX(280%); }
+      }
+      @keyframes startup-float {
+        0%, 100% { translate: 0 0; }
+        50% { translate: 0 -5px; }
+      }
+      @media (max-width: 680px) {
+        .startup-layout { width: min(100% - 40px, 430px); min-height: 100%; padding: 24px 0 18px; }
+        .startup-body { grid-template-columns: 1fr; gap: 0; padding: 24px 0; }
+        .startup-copy h1 { margin-top: 16px; font-size: clamp(38px, 11vw, 54px); }
+        .startup-copy > p { font-size: 14px; }
+        .startup-progress { margin-top: 22px; }
+        .startup-visual { min-height: 245px; transform: scale(0.82); }
+        .startup-visual::before { width: 280px; height: 280px; }
+        .startup-visual::after { width: 215px; height: 215px; }
+        .startup-footer { flex-wrap: wrap; font-size: 8px; }
+        .startup-author { justify-items: start; width: 100%; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .startup-progress__track span,
+        .startup-card { animation: none; }
+        #startup-screen { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="startup-screen" role="status" aria-label="Avvio di WBS Manager">
+      <div class="startup-layout">
+        <header class="startup-brand">
+          <img src="./icon.svg" alt="" />
+          <div class="startup-brand__name">
+            <strong>WBS MANAGER</strong>
+            <span>PROJECT WORKSPACE</span>
+          </div>
+        </header>
+        <main class="startup-body">
+          <section class="startup-copy">
+            <span class="startup-eyebrow">PIANIFICAZIONE, IN PERFETTO EQUILIBRIO</span>
+            <h1>Dai forma alle<br /><em>idee complesse.</em></h1>
+            <p>Attività, dipendenze e scadenze: il tuo progetto prende forma, un passo alla volta.</p>
+            <div class="startup-progress" aria-hidden="true">
+              <div class="startup-progress__track"><span></span></div>
+              <div class="startup-progress__meta">
+                <span>Preparazione dell’area di lavoro</span>
+                <span>WBS</span>
+              </div>
+            </div>
+          </section>
+          <div class="startup-visual" aria-hidden="true">
+            <div class="startup-diagram">
+              <svg class="startup-diagram__lines" viewBox="0 0 330 260">
+                <path d="M165 72v44M58 116h214M58 116v68m107-68v82m107-82v68" />
+              </svg>
+              <div class="startup-card startup-card--root">
+                <span class="startup-card__icon">W</span>
+                <span class="startup-card__text"><strong>Il tuo progetto</strong><span>PIANO PRINCIPALE</span></span>
+              </div>
+              <div class="startup-card startup-card--left">
+                <span class="startup-card__icon">01</span>
+                <span class="startup-card__text"><strong>Analisi</strong><span>Requisiti e obiettivi</span></span>
+              </div>
+              <div class="startup-card startup-card--middle">
+                <span class="startup-card__icon">02</span>
+                <span class="startup-card__text"><strong>Progettazione</strong><span>Struttura e piano</span></span>
+              </div>
+              <div class="startup-card startup-card--right">
+                <span class="startup-card__icon">03</span>
+                <span class="startup-card__text"><strong>Realizzazione</strong><span>Un passo alla volta</span></span>
+              </div>
+            </div>
+          </div>
+        </main>
+        <footer class="startup-footer">
+          <span>PIANIFICA CON CHIAREZZA. REALIZZA CON SICUREZZA.</span>
+          <span class="startup-author">
+            <span>Autore: Alessandro Puglisi</span>
+            <a href="mailto:alessandro.puglisi@eng.it">alessandro.puglisi@eng.it</a>
+          </span>
+        </footer>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

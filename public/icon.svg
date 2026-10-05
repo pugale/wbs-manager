@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="background" x1="24" y1="16" x2="232" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#172b4d"/>
+      <stop offset="1" stop-color="#0b1428"/>
+    </linearGradient>
+    <linearGradient id="root" x1="91" y1="45" x2="164" y2="103" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4de0c1"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="20" y1="158" x2="73" y2="209" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67c7ff"/>
+      <stop offset="1" stop-color="#3295ed"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="101" y1="158" x2="154" y2="209" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4de0c1"/>
+      <stop offset="1" stop-color="#19b6a2"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="182" y1="158" x2="235" y2="209" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffd078"/>
+      <stop offset="1" stop-color="#f4a93e"/>
+    </linearGradient>
+    <filter id="shadow" x="10" y="35" width="236" height="191" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#050b18" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="url(#background)"/>
+  <circle cx="128" cy="124" r="101" fill="#7dd3fc" opacity=".045"/>
+  <path d="M128 101v25M47 126h162M47 126v29m81-29v29m81-29v29" fill="none" stroke="#a9c1e5" stroke-linecap="round" stroke-linejoin="round" stroke-width="7" opacity=".9"/>
+  <g filter="url(#shadow)">
+    <rect x="87" y="42" width="82" height="63" rx="19" fill="url(#root)"/>
+    <rect x="24" y="151" width="46" height="58" rx="16" fill="url(#blue)"/>
+    <rect x="105" y="151" width="46" height="58" rx="16" fill="url(#teal)"/>
+    <rect x="186" y="151" width="46" height="58" rx="16" fill="url(#amber)"/>
+  </g>
+  <path d="M109 66h38M109 80h26" fill="none" stroke="#083b45" stroke-linecap="round" stroke-width="7" opacity=".68"/>
+  <circle cx="108" cy="92" r="4" fill="#fff" opacity=".9"/>
+  <path d="M39 174h16m-16 13h11M120 174h16m-16 13h11M201 174h16m-16 13h11" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="5" opacity=".93"/>
+</svg>

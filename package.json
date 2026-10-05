@@ -1,0 +1,45 @@
+{
+  "name": "wbs-manager",
+  "productName": "WBS Manager",
+  "version": "0.1.0",
+  "description": "Gestione grafica di una WBS con task collegati da frecce",
+  "author": "Alessandro Puglisi",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k -n VITE,ELECTRON -c cyan,magenta \"vite\" \"wait-on tcp:127.0.0.1:5173 && electron . --dev\"",
+    "vite": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit && vite build",
+    "start": "npm run build && electron .",
+    "dist": "node -e \"const fs=require('node:fs'); for (const dir of ['release/win-unpacked','release-portable/win-unpacked']) fs.rmSync(dir,{recursive:true,force:true})\" && npm run build && electron-builder --win nsis --x64 && electron-builder --win portable --x64 --config.directories.output=release-portable"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@xyflow/react": "^12.11.0",
+    "concurrently": "^9.2.0",
+    "date-fns": "^4.1.0",
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vitest": "^5.0.3",
+    "wait-on": "^8.0.0",
+    "zustand": "^5.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "html-to-image": "^1.11.13"
+  }
+}
