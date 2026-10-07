@@ -57,14 +57,43 @@ export function durataGiorniLavorativi(inizio: string | null, fine: string | nul
   return lavorativi;
 }
 
+export function isNodoFiglio(task?: Pick<WbsTaskData, "nodoFiglio"> | null): boolean {
+  return (task?.nodoFiglio ?? "").toUpperCase() === "F";
+}
+
+export function nodoFiglioFuoriIntervallo(
+  taskId: string,
+  nodes: Array<{ id: string; data: WbsTaskData }>
+): string | null {
+  const indice = nodes.findIndex((n) => n.id === taskId);
+  if (indice <= 0) return null;
+  const task = nodes[indice].data;
+  if (!isNodoFiglio(task)) return null;
+
+  const padre = nodes[indice - 1]?.data;
+  const inizioTask = toDate(task.dataInizio);
+  const fineTask = toDate(task.dataFine);
+  const inizioPadre = toDate(padre?.dataInizio ?? null);
+  const finePadre = toDate(padre?.dataFine ?? null);
+
+  if (!padre || !inizioTask || !fineTask || !inizioPadre || !finePadre) return null;
+
+  const fuoriIntervallo = isBefore(inizioTask, inizioPadre) || isAfter(fineTask, finePadre);
+  if (!fuoriIntervallo) return null;
+
+  return `Il task figlio esce dall'intervallo del padre (${format(inizioPadre, "dd/MM/yyyy")}–${format(finePadre, "dd/MM/yyyy")}).`;
+}
+
 export function isInRitardo(task: WbsTaskData): boolean {
   const df = toDate(task.dataFine);
   if (!df || task.percentuale >= 100) return false;
   return isBefore(df, startOfDay(new Date()));
 }
 
-// Collegamento Fine-Inizio: il successore deve iniziare dopo la fine del predecessore
+// Collegamento Fine-Inizio: il successore deve iniziare dopo la fine del predecessore.
+// I task marcati come figlio del precedente non sono considerati errori di dipendenza cronologica.
 export function violaFineInizio(predecessore?: WbsTaskData, successore?: WbsTaskData): boolean {
+  if (isNodoFiglio(predecessore) || isNodoFiglio(successore)) return false;
   const fine = toDate(predecessore?.dataFine);
   const inizio = toDate(successore?.dataInizio);
   if (!fine || !inizio) return false;

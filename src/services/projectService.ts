@@ -78,6 +78,8 @@ export function normalizzaTask(grezzo: unknown): WbsTaskData {
   const tipoTask = TIPI_TASK.find((tipo) => tipo === d.tipoTask) ?? "Sviluppo";
   const dataInizio = d.dataInizio;
   const dataFine = d.dataFine;
+  const nodoFiglioGrezzo = (d.nodoFiglio ?? d.nodoFigli ?? "") as string;
+  const nodoFiglio = nodoFiglioGrezzo === "F" ? "F" : "";
 
   return {
     titolo: testo(d.titolo, "Senza titolo"),
@@ -86,6 +88,7 @@ export function normalizzaTask(grezzo: unknown): WbsTaskData {
     responsabile: testo(d.responsabile).trim(),
     dataInizio: isDataIsoValida(dataInizio) ? dataInizio : null,
     dataFine: isDataIsoValida(dataFine) ? dataFine : null,
+    nodoFiglio,
     percentuale: Math.min(100, Math.max(0, Math.round(numero(d.percentuale, 0))))
   };
 }

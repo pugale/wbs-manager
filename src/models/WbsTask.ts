@@ -21,6 +21,7 @@ export type WbsTaskData = {
   responsabile: string;
   dataInizio: string | null; // formato "yyyy-MM-dd"
   dataFine: string | null; // formato "yyyy-MM-dd"
+  nodoFiglio?: "" | "F"; // vuoto = indipendente; "F" = figlio del precedente
   percentuale: number; // 0-100
 };
 

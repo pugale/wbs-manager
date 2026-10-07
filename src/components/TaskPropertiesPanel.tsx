@@ -109,6 +109,17 @@ export default function TaskPropertiesPanel() {
         />
       </div>
 
+      <label className="field">
+        Nodo figlio
+        <select
+          value={data.nodoFiglio ?? ""}
+          onChange={(e) => updateTask(id, { nodoFiglio: e.target.value === "F" ? "F" : "" })}
+        >
+          <option value="">Indipendente</option>
+          <option value="F">Figlio del precedente</option>
+        </select>
+      </label>
+
       {errore && <p className="error">{errore}</p>}
       {durata !== null && <p className="muted">Durata: {durata} giorni lavorativi</p>}
 

@@ -558,6 +558,13 @@ button:disabled {
   font-size: 12px;
 }
 
+.task-node__child-icon {
+  flex-shrink: 0;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .task-node__title > .ellipsis {
   min-width: 0;
 }

@@ -78,6 +78,15 @@ function TaskNode({ data, selected }: NodeProps<WbsNode>) {
         <span className="task-node__type-icon" title={data.tipoTask} aria-label={data.tipoTask}>
           {ICONA_TIPO_TASK[data.tipoTask]}
         </span>
+        {data.nodoFiglio === "F" && (
+          <span
+            className="task-node__child-icon"
+            title="Task figlio del precedente"
+            aria-label="Task figlio del precedente"
+          >
+            ↳
+          </span>
+        )}
         <span className="ellipsis">{data.titolo}</span>
       </div>
 

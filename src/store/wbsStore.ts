@@ -236,6 +236,7 @@ export const useWbsStore = create<WbsState>()((set) => ({
           responsabile: "",
           dataInizio: oggi,
           dataFine: oggi,
+          nodoFiglio: "",
           percentuale: 0
         }
       };
