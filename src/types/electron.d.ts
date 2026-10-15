@@ -26,6 +26,10 @@ declare global {
       immagine: string;
       nomeSuggerito: string;
     }): Promise<string | null>;
+    salvaImmaginePng?(dati: {
+      immagine: string;
+      nomeSuggerito: string;
+    }): Promise<string | null>;
     impostaModificato(valore: boolean): void;
   }
 

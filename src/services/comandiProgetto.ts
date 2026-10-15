@@ -48,6 +48,21 @@ export async function apriProgetto() {
   }
 }
 
+export async function caricaProgettoEsempio() {
+  if (!(await confermaPerditaModifiche())) return;
+  try {
+    const res = await fetch("./esempi/Progetto WBS.wbsm");
+    if (!res.ok) throw new Error("File di esempio non trovato.");
+    const buffer = new Uint8Array(await res.arrayBuffer());
+    const { leggiArchivio } = await import("./wbsmArchive");
+    const archivio = leggiArchivio(buffer);
+    const progetto = deserializzaProgetto(archivio.contenutoCorrente);
+    useWbsStore.getState().caricaProgetto(progetto, "Progetto WBS.wbsm", false, archivio);
+  } catch (errore) {
+    mostraErrore("Impossibile caricare il progetto di esempio.", errore);
+  }
+}
+
 export async function salvaProgetto(conNome = false): Promise<boolean> {
   const s = useWbsStore.getState();
   try {

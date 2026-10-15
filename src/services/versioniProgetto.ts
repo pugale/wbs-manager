@@ -115,18 +115,6 @@ export function confrontaProgetti(
         });
       }
     }
-    const posizioneDa = valorePerConfronto(vecchio.position);
-    const posizioneA = valorePerConfronto(node.position);
-    if (posizioneDa !== posizioneA) {
-      modifiche.push({
-        idTask: node.id,
-        titoloTask: node.data.titolo,
-        campo: "Posizione nel grafo",
-        da: posizioneDa,
-        a: posizioneA,
-        tipo: "modificato"
-      });
-    }
   }
 
   if (precedente.tipoFreccia !== successivo.tipoFreccia) {

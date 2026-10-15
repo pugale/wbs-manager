@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useWbsStore } from "../store/wbsStore";
-import { apriProgetto, nuovoProgetto, salvaProgetto } from "../services/comandiProgetto";
+import { apriProgetto, caricaProgettoEsempio, nuovoProgetto, salvaProgetto } from "../services/comandiProgetto";
 import type { FiltroTask } from "../utils/filtroTask";
 import type { TipoFreccia } from "../models/Progetto";
 import { elencoResponsabili } from "../utils/personUtils";
@@ -12,6 +12,7 @@ type ToolbarProps = {
   onVisualizzazioneChange: (visualizzazione: "grafo" | "gantt" | "risorse") => void;
   tipoFreccia: TipoFreccia;
   onTipoFrecciaChange: (tipo: TipoFreccia) => void;
+  onEsportaPng: () => void;
   onEsportaJpg: () => void;
   onImportaCsv: () => void;
   onEsportaCsv: () => void;
@@ -33,6 +34,7 @@ export default function Toolbar({
   onVisualizzazioneChange,
   tipoFreccia,
   onTipoFrecciaChange,
+  onEsportaPng,
   onEsportaJpg,
   onImportaCsv,
   onEsportaCsv,
@@ -222,6 +224,9 @@ export default function Toolbar({
             <button className="toolbar__menu-action" onClick={(event) => { chiudiMenu(event); void apriProgetto(); }}>
               Apri progetto <kbd>Ctrl+O</kbd>
             </button>
+            <button className="toolbar__menu-action" onClick={(event) => { chiudiMenu(event); void caricaProgettoEsempio(); }}>
+              Carica progetto di esempio
+            </button>
             <button className="toolbar__menu-action" onClick={(event) => { chiudiMenu(event); void salvaProgetto(); }}>
               Salva progetto<kbd>Ctrl+S</kbd>
             </button>
@@ -367,7 +372,7 @@ export default function Toolbar({
       <div className="toolbar__actions">
         <button
           className="btn btn--primary toolbar__new-task"
-          onClick={addTask}
+          onClick={() => addTask()}
           aria-label="Aggiungi un nuovo task"
         >
           + Nuovo task
@@ -426,6 +431,12 @@ export default function Toolbar({
               onClick={(event) => { chiudiMenu(event); onGeneraReport(); }}
             >
               Genera report PDF
+            </button>
+            <button
+              className="toolbar__menu-action"
+              onClick={(event) => { chiudiMenu(event); onEsportaPng(); }}
+            >
+              Esporta in png
             </button>
             <button
               className="toolbar__menu-action"

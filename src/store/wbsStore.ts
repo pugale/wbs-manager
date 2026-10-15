@@ -53,7 +53,12 @@ export type WbsState = DatiProgetto & {
 
   // Task
   selectNode: (id: string | null) => void;
-  addTask: () => void;
+  addTask: (opzioni?: {
+    position?: { x: number; y: number };
+    nodoFiglio?: "" | "F";
+    parentId?: string;
+    titolo?: string;
+  }) => void;
   updateTask: (id: string, patch: Partial<WbsTaskData>) => void;
   removeTask: (id: string) => void;
   importaTask: (taskImportati: TaskImportatoCsv[]) => void;
@@ -193,7 +198,13 @@ export const useWbsStore = create<WbsState>()((set) => ({
       };
     }),
 
-  selectNode: (id) => set({ selectedId: id }),
+  selectNode: (id) =>
+    set((s) => ({
+      selectedId: id,
+      nodes: s.nodes.map((n) =>
+        Boolean(n.selected) === (n.id === id) ? n : { ...n, selected: n.id === id }
+      )
+    })),
   annulla: () =>
     set((s) => {
       const precedente = s._passato.at(-1);
@@ -221,27 +232,73 @@ export const useWbsStore = create<WbsState>()((set) => ({
       };
     }),
 
-  addTask: () =>
+  addTask: (opzioni) =>
     set((s) => {
       const id = creaGeneratoreIdTask(s.nodes)();
       const oggi = oggiIso();
+      const isFiglio = opzioni?.nodoFiglio === "F";
+      const parentNode = opzioni?.parentId
+        ? s.nodes.find((n) => n.id === opzioni.parentId)
+        : s.selectedId
+          ? s.nodes.find((n) => n.id === s.selectedId)
+          : isFiglio
+            ? s.nodes.at(-1)
+            : undefined;
+
+      const dataInizio = isFiglio && parentNode?.data.dataInizio ? parentNode.data.dataInizio : oggi;
+      const dataFine = isFiglio && parentNode?.data.dataFine ? parentNode.data.dataFine : oggi;
+      const titolo = opzioni?.titolo ?? (isFiglio ? "Nuovo task figlio" : "Nuovo task");
+
       const nuovo: WbsNode = {
         id,
         type: "task",
-        position: { x: 0, y: 0 },
+        position: opzioni?.position ?? { x: 0, y: 0 },
         data: {
-          titolo: "Nuovo task",
-          tipoTask: "Sviluppo",
+          titolo,
+          tipoTask:
+            parentNode && isFiglio && parentNode.data.tipoTask !== "Principale"
+              ? parentNode.data.tipoTask
+              : "Sviluppo",
           descrizione: "",
-          responsabile: "",
-          dataInizio: oggi,
-          dataFine: oggi,
-          nodoFiglio: "",
+          responsabile: isFiglio && parentNode ? parentNode.data.responsabile : "",
+          dataInizio,
+          dataFine,
+          nodoFiglio: isFiglio ? "F" : "",
           percentuale: 0
         }
       };
+
+      let nuoviNodi: WbsNode[];
+      if (isFiglio && parentNode) {
+        const indicePadre = s.nodes.findIndex((n) => n.id === parentNode.id);
+        if (indicePadre >= 0) {
+          let indiceInserimento = indicePadre + 1;
+          while (
+            indiceInserimento < s.nodes.length &&
+            s.nodes[indiceInserimento].data.nodoFiglio === "F"
+          ) {
+            indiceInserimento += 1;
+          }
+          nuoviNodi = [
+            ...s.nodes.slice(0, indiceInserimento),
+            nuovo,
+            ...s.nodes.slice(indiceInserimento)
+          ];
+        } else {
+          nuoviNodi = [...s.nodes, nuovo];
+        }
+      } else {
+        nuoviNodi = [...s.nodes, nuovo];
+      }
+
+      const nodiAllineati = allineaDateNodiFiglio(nuoviNodi);
+      const nodiFinali = ricalcolaPercentualiPrincipali(nodiAllineati, s.edges);
+      const nodiConSelezione = nodiFinali.map((n) =>
+        n.id === id ? { ...n, selected: true } : n.selected ? { ...n, selected: false } : n
+      );
+
       return {
-        nodes: [...s.nodes, nuovo],
+        nodes: nodiConSelezione,
         selectedId: id,
         modificato: true,
         _passato: [...s._passato.slice(-(LIMITE_CRONOLOGIA - 1)), snapshot(s)],
