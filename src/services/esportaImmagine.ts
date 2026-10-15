@@ -1,15 +1,12 @@
 import { getNodesBounds } from "@xyflow/react";
 import type { WbsNode } from "../models/WbsTask";
 
-const MESSAGGIO_SOLO_DESKTOP = "L'esportazione JPG è disponibile solo nell'app desktop.";
+const MESSAGGIO_SOLO_DESKTOP = "L'esportazione dell'immagine è disponibile solo nell'app desktop.";
 
-export async function esportaVistaJpg(
+function ottieniConfigurazioneVista(
   visualizzazione: "grafo" | "gantt" | "risorse",
-  nomeProgetto: string,
   nodes: WbsNode[]
-): Promise<void> {
-  if (!window.electronAPI) throw new Error(MESSAGGIO_SOLO_DESKTOP);
-
+) {
   const selettori: Record<typeof visualizzazione, string> = {
     grafo: ".react-flow__viewport",
     gantt: ".gantt-view",
@@ -37,6 +34,38 @@ export async function esportaVistaJpg(
     throw new Error("La vista selezionata non contiene un'immagine esportabile.");
   }
 
+  const style =
+    visualizzazione === "grafo" && bounds
+      ? {
+          position: "relative" as const,
+          width: `${larghezza}px`,
+          height: `${altezza}px`,
+          overflow: "visible" as const,
+          transform: `translate(${margine - bounds.x}px, ${margine - bounds.y}px) scale(1)`,
+          transformOrigin: "0 0"
+        }
+      : { width: `${larghezza}px`, height: `${altezza}px`, overflow: "visible" as const };
+
+  return { elemento, larghezza, altezza, style };
+}
+
+function suffissoVista(visualizzazione: "grafo" | "gantt" | "risorse") {
+  return visualizzazione === "gantt"
+    ? "Gantt"
+    : visualizzazione === "risorse"
+      ? "Risorse"
+      : "Grafo";
+}
+
+export async function esportaVistaJpg(
+  visualizzazione: "grafo" | "gantt" | "risorse",
+  nomeProgetto: string,
+  nodes: WbsNode[]
+): Promise<void> {
+  if (!window.electronAPI) throw new Error(MESSAGGIO_SOLO_DESKTOP);
+
+  const { elemento, larghezza, altezza, style } = ottieniConfigurazioneVista(visualizzazione, nodes);
+
   const { toJpeg } = await import("html-to-image");
   const immagine = await toJpeg(elemento, {
     backgroundColor: "#ffffff",
@@ -45,25 +74,48 @@ export async function esportaVistaJpg(
     height: altezza,
     canvasWidth: larghezza,
     canvasHeight: altezza,
-    style: visualizzazione === "grafo" && bounds
-      ? {
-          position: "relative",
-          width: `${larghezza}px`,
-          height: `${altezza}px`,
-          overflow: "visible",
-          transform: `translate(${margine - bounds.x}px, ${margine - bounds.y}px) scale(1)`,
-          transformOrigin: "0 0"
-        }
-      : { width: `${larghezza}px`, height: `${altezza}px`, overflow: "visible" }
+    style
   });
-  const suffisso =
-    visualizzazione === "gantt"
-      ? "Gantt"
-      : visualizzazione === "risorse"
-        ? "Risorse"
-        : "Grafo";
+  const suffisso = suffissoVista(visualizzazione);
   await window.electronAPI.salvaImmagineJpg({
     immagine,
     nomeSuggerito: `${nomeProgetto} - ${suffisso}`
   });
+}
+
+export async function esportaVistaPng(
+  visualizzazione: "grafo" | "gantt" | "risorse",
+  nomeProgetto: string,
+  nodes: WbsNode[]
+): Promise<void> {
+  if (!window.electronAPI) throw new Error(MESSAGGIO_SOLO_DESKTOP);
+
+  const { elemento, larghezza, altezza, style } = ottieniConfigurazioneVista(visualizzazione, nodes);
+
+  const { toPng } = await import("html-to-image");
+  const immagine = await toPng(elemento, {
+    backgroundColor: "#ffffff",
+    width: larghezza,
+    height: altezza,
+    canvasWidth: larghezza,
+    canvasHeight: altezza,
+    style
+  });
+  const suffisso = suffissoVista(visualizzazione);
+  const nomeSuggerito = `${nomeProgetto} - ${suffisso}`;
+
+  if (window.electronAPI.salvaImmaginePng) {
+    await window.electronAPI.salvaImmaginePng({
+      immagine,
+      nomeSuggerito
+    });
+  } else {
+    const nome = `${nomeSuggerito.replace(/[\\/:*?"<>|]/g, "_")}.png`;
+    const a = document.createElement("a");
+    a.href = immagine;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }

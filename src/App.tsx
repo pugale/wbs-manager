@@ -1,12 +1,17 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Background,
+  ControlButton,
   Controls,
   MarkerType,
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  type Edge
+  useReactFlow,
+  type Connection,
+  type Edge,
+  type EdgeChange,
+  type NodeChange
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -20,7 +25,7 @@ import { useWbsStore } from "./store/wbsStore";
 import type { WbsNode } from "./models/WbsTask";
 import type { TipoFreccia } from "./models/Progetto";
 import { apriProgetto, nuovoProgetto, salvaProgetto } from "./services/comandiProgetto";
-import { esportaVistaJpg } from "./services/esportaImmagine";
+import { esportaVistaJpg, esportaVistaPng } from "./services/esportaImmagine";
 import { coloreAvanzamento } from "./utils/avanzamentoUtils";
 import { violaFineInizio } from "./utils/dateUtils";
 import { corrispondeFiltroTask, type FiltroTask } from "./utils/filtroTask";
@@ -46,6 +51,198 @@ type RichiestaNotaVersione = {
   idVersione?: string;
 };
 
+type MenuContestuale = {
+  x: number;
+  y: number;
+  flowX: number;
+  flowY: number;
+  targetNodeId?: string;
+};
+
+type GrafoWorkspaceProps = {
+  nodiVisibili: WbsNode[];
+  edgesVisuali: Edge[];
+  onNodesChange: (changes: NodeChange<WbsNode>[]) => void;
+  onEdgesChange: (changes: EdgeChange<Edge>[]) => void;
+  onConnect: (connection: Connection) => void;
+  validaDipendenza: ReturnType<typeof creaValidatoreDipendenze>;
+  selectNode: (id: string | null) => void;
+  erroreCollegamento: string | null;
+  nodesCount: number;
+};
+
+function GrafoWorkspace({
+  nodiVisibili,
+  edgesVisuali,
+  onNodesChange,
+  onEdgesChange,
+  onConnect,
+  validaDipendenza,
+  selectNode,
+  erroreCollegamento,
+  nodesCount
+}: GrafoWorkspaceProps) {
+  const { zoomTo, screenToFlowPosition } = useReactFlow();
+  const addTask = useWbsStore((s) => s.addTask);
+  const [menuContestuale, setMenuContestuale] = useState<MenuContestuale | null>(null);
+
+  useEffect(() => {
+    if (!menuContestuale) return;
+    const chiudi = () => setMenuContestuale(null);
+    const onKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") setMenuContestuale(null);
+    };
+    window.addEventListener("pointerdown", chiudi);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", chiudi);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuContestuale]);
+
+  return (
+    <>
+      <ReactFlow
+        onInit={() => {
+          const schermata = document.getElementById("startup-screen");
+          if (!schermata) return;
+          schermata.setAttribute("aria-hidden", "true");
+          schermata.classList.add("startup-screen--ready");
+          window.setTimeout(() => schermata.remove(), 350);
+        }}
+        nodes={nodiVisibili}
+        edges={edgesVisuali}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        isValidConnection={(connessione) =>
+          validaDipendenza({
+            source: connessione.source,
+            target: connessione.target,
+            sourceHandle: connessione.sourceHandle ?? null,
+            targetHandle: connessione.targetHandle ?? null
+          }) === null
+        }
+        onConnectEnd={(_, statoConnessione) => {
+          if (!statoConnessione.fromNode || !statoConnessione.toNode) return;
+          const errore = validaDipendenza({
+            source: statoConnessione.fromNode.id,
+            target: statoConnessione.toNode.id,
+            sourceHandle: statoConnessione.fromHandle.id ?? null,
+            targetHandle: statoConnessione.toHandle?.id ?? null
+          });
+          if (errore) useWbsStore.setState({ erroreCollegamento: errore });
+        }}
+        onNodeClick={(_, n) => {
+          selectNode(n.id);
+          setMenuContestuale(null);
+        }}
+        onPaneClick={() => {
+          selectNode(null);
+          useWbsStore.setState({ erroreCollegamento: null });
+          setMenuContestuale(null);
+        }}
+        onPaneContextMenu={(event) => {
+          event.preventDefault();
+          const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+          setMenuContestuale({
+            x: event.clientX,
+            y: event.clientY,
+            flowX: Math.round(flowPos.x),
+            flowY: Math.round(flowPos.y)
+          });
+        }}
+        onNodeContextMenu={(event, node) => {
+          event.preventDefault();
+          selectNode(node.id);
+          const flowPos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+          setMenuContestuale({
+            x: event.clientX,
+            y: event.clientY,
+            flowX: Math.round(flowPos.x),
+            flowY: Math.round(flowPos.y),
+            targetNodeId: node.id
+          });
+        }}
+        onMoveStart={() => setMenuContestuale(null)}
+        deleteKeyCode={["Delete", "Backspace"]}
+        minZoom={0.2}
+        fitView
+        fitViewOptions={{ maxZoom: 1 }}
+      >
+        <Background gap={16} />
+        <Controls>
+          <ControlButton
+            className="react-flow__controls-zoom100"
+            onClick={() => zoomTo(1)}
+            title="Zoom 100%"
+            aria-label="Zoom 100%"
+          >
+            100%
+          </ControlButton>
+        </Controls>
+        <MiniMap<WbsNode>
+          pannable
+          zoomable
+          nodeColor={(n) => coloreAvanzamento(n.data.percentuale)}
+        />
+      </ReactFlow>
+
+      {menuContestuale && (
+        <div
+          className="context-menu"
+          style={{
+            top: Math.min(menuContestuale.y, window.innerHeight - 90),
+            left: Math.min(menuContestuale.x, window.innerWidth - 180)
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="context-menu__action"
+            onClick={() => {
+              addTask({
+                position: { x: menuContestuale.flowX, y: menuContestuale.flowY }
+              });
+              setMenuContestuale(null);
+            }}
+          >
+            Nuovo task
+          </button>
+          <button
+            className="context-menu__action"
+            onClick={() => {
+              addTask({
+                position: { x: menuContestuale.flowX, y: menuContestuale.flowY },
+                nodoFiglio: "F",
+                parentId: menuContestuale.targetNodeId
+              });
+              setMenuContestuale(null);
+            }}
+          >
+            Nuovo task figlio
+          </button>
+        </div>
+      )}
+
+      {nodesCount === 0 && (
+        <div className="empty-hint">
+          Premi <strong>+ Nuovo task</strong> o fai clic destro per iniziare.
+          <br />
+          Trascina da un punto di ancoraggio su un lato del task a un punto su un altro task per
+          collegarli.
+        </div>
+      )}
+      {erroreCollegamento && (
+        <p className="connection-error" role="alert">
+          {erroreCollegamento}
+        </p>
+      )}
+    </>
+  );
+}
+
 export default function App() {
   const [visualizzazione, setVisualizzazione] = useState<"grafo" | "gantt" | "risorse">("grafo");
   const [ricerca, setRicerca] = useState("");
@@ -61,6 +258,7 @@ export default function App() {
   const nomeProgetto = useWbsStore((s) => s.nomeProgetto);
   const modificato = useWbsStore((s) => s.modificato);
   const nodes = useWbsStore((s) => s.nodes);
+  const selectedId = useWbsStore((s) => s.selectedId);
   const edges = useWbsStore((s) => s.edges);
   const archivio = useWbsStore((s) => s.archivio);
   const tipoFreccia = useWbsStore((s) => s.tipoFreccia);
@@ -345,13 +543,15 @@ export default function App() {
       nodes.map((node) => {
         const corrisponde = corrispondeFiltroTask(node, ricerca, filtro, responsabile);
         const opacita = corrisponde ? 1 : 0.18;
-        if (node.style?.opacity === opacita) return node;
+        const selected = node.id === selectedId;
+        if (node.style?.opacity === opacita && Boolean(node.selected) === selected) return node;
         return {
           ...node,
+          selected,
           style: { ...node.style, opacity: opacita }
         };
       }),
-    [nodes, ricerca, filtro, responsabile]
+    [nodes, ricerca, filtro, responsabile, selectedId]
   );
 
   return (
@@ -391,6 +591,12 @@ export default function App() {
             });
         }}
         onGeneraReport={() => setRichiestaReport(true)}
+        onEsportaPng={() =>
+          void esportaVistaPng(visualizzazione, nomeProgetto, nodes).catch((errore: unknown) => {
+            const dettaglio = errore instanceof Error ? errore.message : String(errore);
+            window.alert(`Impossibile esportare l'immagine PNG.\n\n${dettaglio}`);
+          })
+        }
         onEsportaJpg={() =>
           void esportaVistaJpg(visualizzazione, nomeProgetto, nodes).catch((errore: unknown) => {
             const dettaglio = errore instanceof Error ? errore.message : String(errore);
@@ -402,75 +608,19 @@ export default function App() {
       <div className="workspace">
         <main className={`canvas${visualizzazione === "gantt" ? " canvas--gantt" : ""}`}>
           {visualizzazione === "grafo" ? (
-            <>
-              {/* key = id progetto: quando apri un altro progetto la vista si ricentra */}
-              <ReactFlowProvider key={progettoId}>
-                <ReactFlow
-                  onInit={() => {
-                    const schermata = document.getElementById("startup-screen");
-                    if (!schermata) return;
-                    schermata.setAttribute("aria-hidden", "true");
-                    schermata.classList.add("startup-screen--ready");
-                    window.setTimeout(() => schermata.remove(), 350);
-                  }}
-                  nodes={nodiVisibili}
-                  edges={edgesVisuali}
-                  nodeTypes={nodeTypes}
-                  onNodesChange={onNodesChange}
-                  onEdgesChange={onEdgesChange}
-                  onConnect={onConnect}
-                  isValidConnection={(connessione) =>
-                    validaDipendenza({
-                      source: connessione.source,
-                      target: connessione.target,
-                      sourceHandle: connessione.sourceHandle ?? null,
-                      targetHandle: connessione.targetHandle ?? null
-                    }) === null
-                  }
-                  onConnectEnd={(_, statoConnessione) => {
-                    if (!statoConnessione.fromNode || !statoConnessione.toNode) return;
-                    const errore = validaDipendenza({
-                      source: statoConnessione.fromNode.id,
-                      target: statoConnessione.toNode.id,
-                      sourceHandle: statoConnessione.fromHandle.id ?? null,
-                      targetHandle: statoConnessione.toHandle?.id ?? null
-                    });
-                    if (errore) useWbsStore.setState({ erroreCollegamento: errore });
-                  }}
-                  onNodeClick={(_, n) => selectNode(n.id)}
-                  onPaneClick={() => {
-                    selectNode(null);
-                    useWbsStore.setState({ erroreCollegamento: null });
-                  }}
-                  deleteKeyCode={["Delete", "Backspace"]}
-                  minZoom={0.2}
-                  fitView
-                  fitViewOptions={{ maxZoom: 1 }}
-                >
-                  <Background gap={16} />
-                  <Controls />
-                  <MiniMap<WbsNode>
-                    pannable
-                    zoomable
-                    nodeColor={(n) => coloreAvanzamento(n.data.percentuale)}
-                  />
-                </ReactFlow>
-              </ReactFlowProvider>
-
-              {nodes.length === 0 && (
-                <div className="empty-hint">
-                  Premi <strong>+ Nuovo task</strong> per iniziare.
-                  <br />
-                  Trascina da un punto di ancoraggio su un lato del task a un punto su un altro task
-                  per collegarli.
-                </div>
-              )}
-              {erroreCollegamento && (
-                <p className="connection-error" role="alert">
-                  {erroreCollegamento}
-                </p>
-              )}
-            </>
+            <ReactFlowProvider key={progettoId}>
+              <GrafoWorkspace
+                nodiVisibili={nodiVisibili}
+                edgesVisuali={edgesVisuali}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                validaDipendenza={validaDipendenza}
+                selectNode={selectNode}
+                erroreCollegamento={erroreCollegamento}
+                nodesCount={nodes.length}
+              />
+            </ReactFlowProvider>
           ) : (
             <Suspense fallback={<p className="view-loading" role="status">Caricamento vista…</p>}>
               {visualizzazione === "gantt" ? (

@@ -6,10 +6,10 @@ export default defineConfig({
   // Percorsi relativi: necessari perché Electron apre dist/index.html da file://
   base: "./",
   server: {
-    // Indirizzo IPv4 esplicito: evita che wait-on resti in attesa se "localhost" risolve su IPv6
-    host: "127.0.0.1",
-    port: 5173,
-    strictPort: true
+    host: "0.0.0.0",
+    port: 3000,
+    strictPort: true,
+    allowedHosts: true
   },
   build: {
     outDir: "dist",

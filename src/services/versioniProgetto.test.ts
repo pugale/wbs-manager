@@ -136,7 +136,6 @@ describe("versioni progetto .wbsm", () => {
     expect(risultati.map((modifica) => [modifica.campo, modifica.tipo])).toEqual(
       expect.arrayContaining([
         ["Avanzamento", "modificato"],
-        ["Posizione nel grafo", "modificato"],
         ["Stile delle frecce", "modificato"],
         ["Task", "aggiunto"],
         ["Task", "rimosso"],

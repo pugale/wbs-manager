@@ -1,0 +1,7 @@
+{
+  "name": "WBS Manager",
+  "description": "Gestione grafica di una WBS con task collegati da frecce, vista Gantt, gestione carichi risorse e versionamento del progetto.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
