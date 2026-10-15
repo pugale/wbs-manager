@@ -12,7 +12,7 @@ import type { WbsNode, WbsTaskData } from "../models/WbsTask";
 import type { TipoFreccia } from "../models/Progetto";
 import type { ArchivioProgetto } from "../models/ProgettoArchivio";
 import type { ProgettoCaricato } from "../services/projectService";
-import { oggiIso } from "../utils/dateUtils";
+import { allineaDateNodiFiglio, oggiIso } from "../utils/dateUtils";
 import { ricalcolaPercentualiPrincipali } from "../utils/aggregazioneTask";
 import { erroreDipendenza } from "../utils/dependencyUtils";
 import type { TaskImportatoCsv } from "../services/csvProgetto";
@@ -257,7 +257,7 @@ export const useWbsStore = create<WbsState>()((set) => ({
       if (!corrente || Object.entries(patch).every(([chiave, valore]) =>
         corrente.data[chiave as keyof WbsTaskData] === valore
       )) return s;
-      const nodes = s.nodes.map((n) =>
+      const nodesAggiornati = s.nodes.map((n) =>
         n.id === id
           ? {
               ...n,
@@ -269,6 +269,7 @@ export const useWbsStore = create<WbsState>()((set) => ({
             }
           : n
       );
+      const nodes = allineaDateNodiFiglio(nodesAggiornati);
       const cambiaStrutturaPrincipale =
         patch.tipoTask !== undefined &&
         (corrente.data.tipoTask === "Principale") !== (patch.tipoTask === "Principale");
@@ -334,7 +335,7 @@ export const useWbsStore = create<WbsState>()((set) => ({
           edges = [...edges, { id: crypto.randomUUID(), source, target }];
         }
       }
-      const nodes = ricalcolaPercentualiPrincipali([...s.nodes, ...nodiImportati], edges);
+      const nodes = ricalcolaPercentualiPrincipali(allineaDateNodiFiglio([...s.nodes, ...nodiImportati]), edges);
       const selezionato = nodiImportati.at(-1);
       return {
         nodes,
@@ -393,7 +394,7 @@ export const useWbsStore = create<WbsState>()((set) => ({
       progettoId: progetto.id,
       nomeProgetto: progetto.nome,
       tipoFreccia: progetto.tipoFreccia,
-      nodes: ricalcolaPercentualiPrincipali(progetto.nodes, progetto.edges),
+      nodes: ricalcolaPercentualiPrincipali(allineaDateNodiFiglio(progetto.nodes), progetto.edges),
       edges: progetto.edges,
       percorsoFile: percorso,
       modificato,

@@ -21,13 +21,7 @@ export default function TaskPropertiesPanel() {
   );
 
   const node = nodes.find((n) => n.id === selectedId);
-  if (!node) {
-    return (
-      <aside className="panel">
-        <p className="muted">Seleziona un task per modificarlo.</p>
-      </aside>
-    );
-  }
+  if (!node) return null;
 
   const { id, data } = node;
   const errore = validaDate(data.dataInizio, data.dataFine);

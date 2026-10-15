@@ -99,3 +99,30 @@ export function violaFineInizio(predecessore?: WbsTaskData, successore?: WbsTask
   if (!fine || !inizio) return false;
   return !isAfter(inizio, fine);
 }
+
+
+// Mantiene le date di ogni task figlio dentro l'intervallo del task immediatamente precedente.
+// Il riallineamento è usato dallo store, quindi copre pannello proprietà, Gantt e importazioni.
+export function allineaDateNodiFiglio<T extends { id: string; data: WbsTaskData }>(nodes: T[]): T[] {
+  return nodes.map((node, indice) => {
+    if (indice === 0 || !isNodoFiglio(node.data)) return node;
+    const padre = nodes[indice - 1]?.data;
+    const inizioPadre = toDate(padre?.dataInizio ?? null);
+    const finePadre = toDate(padre?.dataFine ?? null);
+    const inizio = toDate(node.data.dataInizio);
+    const fine = toDate(node.data.dataFine);
+    if (!inizioPadre || !finePadre || (!inizio && !fine)) return node;
+    let nuovoInizio = inizio && isBefore(inizio, inizioPadre) ? new Date(inizioPadre) : inizio;
+    let nuovaFine = fine && isAfter(fine, finePadre) ? new Date(finePadre) : fine;
+    if (nuovoInizio && isAfter(nuovoInizio, finePadre)) nuovoInizio = new Date(finePadre);
+    if (nuovaFine && isBefore(nuovaFine, inizioPadre)) nuovaFine = new Date(inizioPadre);
+    if (nuovoInizio && nuovaFine && isAfter(nuovoInizio, nuovaFine)) {
+      if (inizio && isAfter(inizio, finePadre)) nuovoInizio = nuovaFine = new Date(finePadre);
+      else nuovoInizio = nuovaFine = new Date(inizioPadre);
+    }
+    const dataInizio = nuovoInizio ? format(nuovoInizio, "yyyy-MM-dd") : node.data.dataInizio;
+    const dataFine = nuovaFine ? format(nuovaFine, "yyyy-MM-dd") : node.data.dataFine;
+    if (dataInizio === node.data.dataInizio && dataFine === node.data.dataFine) return node;
+    return { ...node, data: { ...node.data, dataInizio, dataFine } } as T;
+  });
+}
