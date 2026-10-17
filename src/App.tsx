@@ -85,10 +85,16 @@ function GrafoWorkspace({
   const { zoomTo, screenToFlowPosition } = useReactFlow();
   const addTask = useWbsStore((s) => s.addTask);
   const [menuContestuale, setMenuContestuale] = useState<MenuContestuale | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!menuContestuale) return;
-    const chiudi = () => setMenuContestuale(null);
+    const chiudi = (e: MouseEvent | PointerEvent) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) {
+        return;
+      }
+      setMenuContestuale(null);
+    };
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape") setMenuContestuale(null);
     };
@@ -191,34 +197,49 @@ function GrafoWorkspace({
 
       {menuContestuale && (
         <div
+          ref={menuRef}
           className="context-menu"
           style={{
             top: Math.min(menuContestuale.y, window.innerHeight - 90),
             left: Math.min(menuContestuale.x, window.innerWidth - 180)
           }}
-          onContextMenu={(e) => e.preventDefault()}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
           <button
+            type="button"
             className="context-menu__action"
-            onClick={() => {
-              addTask({
-                position: { x: menuContestuale.flowX, y: menuContestuale.flowY }
-              });
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              const pos = { x: menuContestuale.flowX, y: menuContestuale.flowY };
               setMenuContestuale(null);
+              addTask({ position: pos });
             }}
           >
             Nuovo task
           </button>
           <button
+            type="button"
             className="context-menu__action"
-            onClick={() => {
-              addTask({
-                position: { x: menuContestuale.flowX, y: menuContestuale.flowY },
-                nodoFiglio: "F",
-                parentId: menuContestuale.targetNodeId
-              });
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              const pos = { x: menuContestuale.flowX, y: menuContestuale.flowY };
+              const targetNodeId = menuContestuale.targetNodeId;
               setMenuContestuale(null);
+              addTask({
+                position: pos,
+                nodoFiglio: "F",
+                parentId: targetNodeId
+              });
             }}
           >
             Nuovo task figlio

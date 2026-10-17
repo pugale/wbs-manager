@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
     "vite": "vite --host 0.0.0.0 --port 3000",
@@ -15,7 +16,11 @@
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
-    "start": "vite --host 0.0.0.0 --port 3000"
+    "start": "vite --host 0.0.0.0 --port 3000",
+    "dist": "npm run build && electron-builder --win nsis portable --x64",
+    "dist:setup": "npm run build && electron-builder --win nsis --x64",
+    "dist:portable": "npm run build && electron-builder --win portable --x64 --config.directories.output=release-portable",
+    "dist:all": "node -e \"const fs=require('node:fs'); for (const dir of ['release/win-unpacked','release-portable/win-unpacked']) fs.rmSync(dir,{recursive:true,force:true})\" && npm run build && electron-builder --win nsis --x64 && electron-builder --win portable --x64 --config.directories.output=release-portable"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
@@ -23,6 +28,8 @@
     "@vitejs/plugin-react": "^5.0.0",
     "@xyflow/react": "^12.11.0",
     "date-fns": "^4.1.0",
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "typescript": "^5.9.0",
