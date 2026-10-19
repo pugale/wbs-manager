@@ -10,6 +10,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // "npm run dev" avvia Electron con l'argomento --dev
 const isDev = process.argv.includes("--dev");
 const DEV_URL = "http://127.0.0.1:5173";
+const iconPath = app.isPackaged
+  ? path.join(process.resourcesPath, "build", "icon.ico")
+  : path.join(__dirname, "../build/icon.ico");
 const FILTRI = [
   { name: "Progetto WBS Manager", extensions: ["wbsm"] },
   { name: "Progetto WBS legacy", extensions: ["json"] }
@@ -50,7 +53,7 @@ function createWindow() {
     minWidth: 1000,
     minHeight: 600,
     title: "WBS Manager",
-    icon: path.join(__dirname, "../build/icon.ico"),
+    icon: iconPath,
     show: false,
     webPreferences: {
       // Il preload deve essere CommonJS (.cjs) perché gira in sandbox
@@ -110,7 +113,7 @@ function apriFinestraManuale() {
     minHeight: 560,
     parent: win ?? undefined,
     title: "Manuale operativo — WBS Manager",
-    icon: path.join(__dirname, "../build/icon.ico"),
+    icon: iconPath,
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,

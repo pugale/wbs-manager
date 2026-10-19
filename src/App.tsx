@@ -16,11 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import TaskNode from "./components/TaskNode";
-import TaskPropertiesPanel from "./components/TaskPropertiesPanel";
 import Toolbar from "./components/Toolbar";
-import VersioniDialog from "./components/VersioniDialog";
-import ElencoVersioniDialog from "./components/ElencoVersioniDialog";
-import NotaVersioneDialog from "./components/NotaVersioneDialog";
 import { useWbsStore } from "./store/wbsStore";
 import type { WbsNode } from "./models/WbsTask";
 import type { TipoFreccia } from "./models/Progetto";
@@ -43,6 +39,10 @@ const nodeTypes = { task: TaskNode };
 const GanttView = lazy(() => import("./components/GanttView"));
 const ResourceView = lazy(() => import("./components/ResourceView"));
 const PrintReport = lazy(() => import("./components/PrintReport"));
+const TaskPropertiesPanel = lazy(() => import("./components/TaskPropertiesPanel"));
+const VersioniDialog = lazy(() => import("./components/VersioniDialog"));
+const ElencoVersioniDialog = lazy(() => import("./components/ElencoVersioniDialog"));
+const NotaVersioneDialog = lazy(() => import("./components/NotaVersioneDialog"));
 
 type RichiestaNotaVersione = {
   titolo: string;
@@ -658,7 +658,11 @@ export default function App() {
           )}
         </main>
 
-        {visualizzazione !== "risorse" && <TaskPropertiesPanel />}
+        {visualizzazione !== "risorse" && selectedId && (
+          <Suspense fallback={null}>
+            <TaskPropertiesPanel />
+          </Suspense>
+        )}
       </div>
       {richiestaReport && (
         <Suspense fallback={null}>
@@ -670,28 +674,30 @@ export default function App() {
           />
         </Suspense>
       )}
-      {mostraVersioni && archivio && (
-        <VersioniDialog
-          archivio={archivio}
-          onClose={() => setMostraVersioni(false)}
-          onRipristina={ripristinaVersione}
-        />
-      )}
-      {mostraElencoVersioni && archivio && (
-        <ElencoVersioniDialog
-          archivio={archivio}
-          onClose={() => setMostraElencoVersioni(false)}
-          onRipristina={ripristinaVersione}
-        />
-      )}
-      {richiestaNotaVersione && (
-        <NotaVersioneDialog
-          titolo={richiestaNotaVersione.titolo}
-          notaIniziale={richiestaNotaVersione.notaIniziale}
-          onConferma={(nota) => void confermaNotaVersione(nota)}
-          onAnnulla={() => setRichiestaNotaVersione(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {mostraVersioni && archivio && (
+          <VersioniDialog
+            archivio={archivio}
+            onClose={() => setMostraVersioni(false)}
+            onRipristina={ripristinaVersione}
+          />
+        )}
+        {mostraElencoVersioni && archivio && (
+          <ElencoVersioniDialog
+            archivio={archivio}
+            onClose={() => setMostraElencoVersioni(false)}
+            onRipristina={ripristinaVersione}
+          />
+        )}
+        {richiestaNotaVersione && (
+          <NotaVersioneDialog
+            titolo={richiestaNotaVersione.titolo}
+            notaIniziale={richiestaNotaVersione.notaIniziale}
+            onConferma={(nota) => void confermaNotaVersione(nota)}
+            onAnnulla={() => setRichiestaNotaVersione(null)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

@@ -163,7 +163,7 @@ Segnali visivi:
 ```text
 wbs-manager
 ├── .vscode/              Impostazioni, estensioni consigliate, debug (F5)
-├── build/                Icona Windows per Electron e l'installer (icon.ico)
+├── build/                Icona Windows per app, setup e portabile (icon.ico, da public/icon.svg)
 ├── electron/
 │   ├── main.js           Finestra, dialoghi Apri/Salva, scrittura file
 │   └── preload.cjs       Ponte sicuro tra Electron e React
