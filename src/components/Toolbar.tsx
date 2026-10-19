@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useWbsStore } from "../store/wbsStore";
-import { apriProgetto, caricaProgettoEsempio, nuovoProgetto, salvaProgetto } from "../services/comandiProgetto";
+import { apriProgetto, nuovoProgetto, salvaProgetto } from "../services/comandiProgetto";
 import type { FiltroTask } from "../utils/filtroTask";
 import type { TipoFreccia } from "../models/Progetto";
 import { elencoResponsabili } from "../utils/personUtils";
@@ -223,9 +223,6 @@ export default function Toolbar({
             </button>
             <button className="toolbar__menu-action" onClick={(event) => { chiudiMenu(event); void apriProgetto(); }}>
               Apri progetto <kbd>Ctrl+O</kbd>
-            </button>
-            <button className="toolbar__menu-action" onClick={(event) => { chiudiMenu(event); void caricaProgettoEsempio(); }}>
-              Carica progetto di esempio
             </button>
             <button className="toolbar__menu-action" onClick={(event) => { chiudiMenu(event); void salvaProgetto(); }}>
               Salva progetto<kbd>Ctrl+S</kbd>

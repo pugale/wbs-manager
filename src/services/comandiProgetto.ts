@@ -1,6 +1,5 @@
 import { useWbsStore } from "../store/wbsStore";
 import { deserializzaProgetto, serializzaProgetto } from "./projectService";
-import { leggiArchivio } from "./wbsmArchive";
 
 const MSG_SOLO_DESKTOP = "Questa funzione è disponibile solo nell'app desktop (npm run dev).";
 
@@ -46,20 +45,6 @@ export async function apriProgetto() {
     useWbsStore.getState().caricaProgetto(progetto, risultato.percorso, false, risultato.archivio);
   } catch (errore) {
     mostraErrore("Impossibile aprire il progetto.", errore);
-  }
-}
-
-export async function caricaProgettoEsempio() {
-  if (!(await confermaPerditaModifiche())) return;
-  try {
-    const res = await fetch("./esempi/Progetto WBS.wbsm");
-    if (!res.ok) throw new Error("File di esempio non trovato.");
-    const buffer = new Uint8Array(await res.arrayBuffer());
-    const archivio = leggiArchivio(buffer);
-    const progetto = deserializzaProgetto(archivio.contenutoCorrente);
-    useWbsStore.getState().caricaProgetto(progetto, "Progetto WBS.wbsm", false, archivio);
-  } catch (errore) {
-    mostraErrore("Impossibile caricare il progetto di esempio.", errore);
   }
 }
 
