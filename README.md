@@ -12,7 +12,7 @@ Tecnologie: Electron · React · TypeScript · Vite · React Flow (@xyflow/react
 
 ## 1. Prerequisiti
 
-- **Node.js 22 LTS** (minimo 20.19) → https://nodejs.org
+- **Node.js 26.12.1 o successivo** → https://nodejs.org
 - **Visual Studio Code** → https://code.visualstudio.com
 - Git (facoltativo)
 
