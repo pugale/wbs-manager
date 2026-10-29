@@ -98,6 +98,32 @@ describe("cronologia progetto", () => {
     expect(useWbsStore.getState().nodes[0].position).toEqual({ x: 0, y: 0 });
   });
 
+  it("organizza i task per data d'inizio e consente di annullare la disposizione", () => {
+    const store = useWbsStore.getState();
+    store.addTask();
+    store.addTask();
+    store.updateTask("1", { dataInizio: "2026-03-20" });
+    store.updateTask("2", { dataInizio: "2026-03-01" });
+
+    useWbsStore.getState().organizzaNodi("orizzontale");
+
+    expect(useWbsStore.getState().nodes.find((node) => node.id === "2")?.position).toEqual({
+      x: 48,
+      y: 48
+    });
+    expect(useWbsStore.getState().nodes.find((node) => node.id === "1")?.position).toEqual({
+      x: 48,
+      y: 158
+    });
+    expect(useWbsStore.getState().modificato).toBe(true);
+
+    useWbsStore.getState().annulla();
+    expect(useWbsStore.getState().nodes.map((node) => node.position)).toEqual([
+      { x: 0, y: 0 },
+      { x: 0, y: 0 }
+    ]);
+  });
+
   it("scarta la cronologia quando viene caricato un altro progetto", () => {
     useWbsStore.getState().addTask();
     useWbsStore.getState().caricaProgetto(

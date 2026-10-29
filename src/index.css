@@ -80,6 +80,14 @@ button:disabled {
   overflow: auto;
 }
 
+.a4-sheet {
+  position: absolute;
+  top: 0;
+  z-index: 0;
+  border: 2px dashed #64748b;
+  pointer-events: none;
+}
+
 .view-loading {
   margin: 16px;
   color: #64748b;
@@ -1501,4 +1509,3 @@ button:disabled {
   outline: 2px solid #2563eb;
   background: #eff6ff;
 }
-

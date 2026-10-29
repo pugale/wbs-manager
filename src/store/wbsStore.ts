@@ -16,6 +16,7 @@ import { allineaDateNodiFiglio, oggiIso } from "../utils/dateUtils";
 import { ricalcolaPercentualiPrincipali } from "../utils/aggregazioneTask";
 import { erroreDipendenza } from "../utils/dependencyUtils";
 import type { TaskImportatoCsv } from "../services/csvProgetto";
+import { organizzaNodiSuFogliA4, type OrientamentoA4 } from "../utils/layoutA4";
 
 // Questi cambiamenti non modificano il progetto (selezione, misura dei nodi)
 const CAMBI_NON_RILEVANTI = new Set(["select", "dimensions"]);
@@ -62,6 +63,7 @@ export type WbsState = DatiProgetto & {
   updateTask: (id: string, patch: Partial<WbsTaskData>) => void;
   removeTask: (id: string) => void;
   importaTask: (taskImportati: TaskImportatoCsv[]) => void;
+  organizzaNodi: (orientamento: OrientamentoA4) => void;
 
   // Progetto
   setNomeProgetto: (nome: string) => void;
@@ -398,6 +400,20 @@ export const useWbsStore = create<WbsState>()((set) => ({
         nodes,
         edges,
         selectedId: selezionato?.id ?? s.selectedId,
+        modificato: true,
+        _passato: [...s._passato.slice(-(LIMITE_CRONOLOGIA - 1)), snapshot(s)],
+        _futuro: [],
+        puoAnnullare: true,
+        puoRipetere: false
+      };
+    }),
+
+  organizzaNodi: (orientamento) =>
+    set((s) => {
+      const nodes = organizzaNodiSuFogliA4(s.nodes, orientamento, s.edges);
+      if (nodes.every((node, indice) => node === s.nodes[indice])) return s;
+      return {
+        nodes,
         modificato: true,
         _passato: [...s._passato.slice(-(LIMITE_CRONOLOGIA - 1)), snapshot(s)],
         _futuro: [],

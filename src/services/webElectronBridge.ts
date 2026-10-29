@@ -36,6 +36,7 @@ export function initWebElectronBridge(): void {
   if (typeof window === "undefined" || window.electronAPI) return;
 
   window.electronAPI = {
+    ambiente: "web",
     async apriManuale(): Promise<void> {
       window.open("./manuale.html", "_blank", "noopener,noreferrer");
     },

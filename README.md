@@ -56,6 +56,12 @@ Debug del processo Electron: in VS Code premi **F5**
 ## 4. Come si usa
 
 - **+ Nuovo task**: aggiunge un task in alto a sinistra sulla lavagna.
+- **Organizza**: dispone il grafo dall'alto verso il basso secondo i collegamenti, con le radici
+  in alto e i task allo stesso livello allineati. L'operazione si può annullare con
+  **Modifica → Annulla**.
+- Per mostrare o nascondere i contorni tratteggiati dei fogli nella vista Grafo, usa
+  **Visualizza → Mostra fogli A4**. Nello stesso menu imposta separatamente la griglia su
+  **A4 orizzontale** o **A4 verticale**.
 - **Aiuto → Manuale operativo**: apre la guida completa all'utilizzo dell'applicazione.
 - **Aiuto → Alessandro Puglisi**: apre il client di posta all'indirizzo alessandro.puglisi@eng.it.
 - **Collegare due task**: trascina dal pallino destro di un task al pallino sinistro di un altro.
@@ -64,7 +70,9 @@ Debug del processo Electron: in VS Code premi **F5**
 - **Eliminare** un task o una freccia: selezionalo e premi `Canc`.
 - **Modificare un task**: cliccalo e usa il pannello a destra.
 - **Salvataggio**: `Ctrl+S` salva, `Ctrl+Shift+S` salva con nome, `Ctrl+O` apre, `Ctrl+N` nuovo.
-  La cartella predefinita è `Documenti\WBS Manager`.
+  L'app ricorda l'ultimo file di progetto aperto o salvato e riutilizza la sua cartella per
+  aprire e salvare i progetti, anche dopo il riavvio. Se quella cartella non è disponibile,
+  usa `Documenti\WBS Manager`.
 - **Versioni**: nel menu **Versioni** definisci la baseline `1.0`, poi crea snapshot numerati
   (`1.1`, `1.2`...) solo quando richiesto. Puoi confrontare due snapshot e ripristinarne uno
   come nuova versione. Il file `.wbsm` contiene il progetto corrente, `manifest.json`,

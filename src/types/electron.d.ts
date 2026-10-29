@@ -5,6 +5,7 @@ export {};
 
 declare global {
   interface ElectronAPI {
+    ambiente: "desktop" | "web";
     apriManuale(): Promise<void>;
     apriEmailAutore(): Promise<void>;
     apriProgetto(): Promise<

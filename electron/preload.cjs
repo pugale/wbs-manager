@@ -2,6 +2,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
+  ambiente: "desktop",
   apriManuale: () => ipcRenderer.invoke("aiuto:apri-manuale"),
   apriEmailAutore: () => ipcRenderer.invoke("aiuto:email-autore"),
   apriProgetto: () => ipcRenderer.invoke("progetto:apri"),

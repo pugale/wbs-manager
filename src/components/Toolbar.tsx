@@ -6,10 +6,16 @@ import type { FiltroTask } from "../utils/filtroTask";
 import type { TipoFreccia } from "../models/Progetto";
 import { elencoResponsabili } from "../utils/personUtils";
 import { serializzaProgetto } from "../services/projectService";
+import type { OrientamentoA4 } from "../utils/layoutA4";
 
 type ToolbarProps = {
   visualizzazione: "grafo" | "gantt" | "risorse";
   onVisualizzazioneChange: (visualizzazione: "grafo" | "gantt" | "risorse") => void;
+  mostraFogliA4: boolean;
+  onMostraFogliA4Change: (mostra: boolean) => void;
+  orientamentoGrigliaA4: OrientamentoA4;
+  onOrientamentoGrigliaA4Change: (orientamento: OrientamentoA4) => void;
+  onOrganizza: () => void;
   tipoFreccia: TipoFreccia;
   onTipoFrecciaChange: (tipo: TipoFreccia) => void;
   onEsportaPng: () => void;
@@ -32,6 +38,11 @@ type ToolbarProps = {
 export default function Toolbar({
   visualizzazione,
   onVisualizzazioneChange,
+  mostraFogliA4,
+  onMostraFogliA4Change,
+  orientamentoGrigliaA4,
+  onOrientamentoGrigliaA4Change,
+  onOrganizza,
   tipoFreccia,
   onTipoFrecciaChange,
   onEsportaPng,
@@ -317,6 +328,38 @@ export default function Toolbar({
                 {etichetta}
               </button>
             ))}
+            {visualizzazione === "grafo" && (
+              <>
+                <button
+                  className={`toolbar__menu-action${mostraFogliA4 ? " is-active" : ""}`}
+                  aria-pressed={mostraFogliA4}
+                  onClick={(event) => {
+                    chiudiMenu(event);
+                    onMostraFogliA4Change(!mostraFogliA4);
+                  }}
+                >
+                  {mostraFogliA4 ? "Nascondi fogli A4" : "Mostra fogli A4"}
+                </button>
+                <div className="toolbar__menu-separator" />
+                <span className="toolbar__menu-hint">Orientamento griglia A4</span>
+                {([
+                  ["orizzontale", "A4 orizzontale"],
+                  ["verticale", "A4 verticale"]
+                ] as const).map(([orientamento, etichetta]) => (
+                  <button
+                    key={orientamento}
+                    className={`toolbar__menu-action${orientamentoGrigliaA4 === orientamento ? " is-active" : ""}`}
+                    aria-pressed={orientamentoGrigliaA4 === orientamento}
+                    onClick={(event) => {
+                      chiudiMenu(event);
+                      onOrientamentoGrigliaA4Change(orientamento);
+                    }}
+                  >
+                    {etichetta}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </details>
 
@@ -374,6 +417,15 @@ export default function Toolbar({
         >
           + Nuovo task
         </button>
+        {visualizzazione === "grafo" && (
+          <button
+            className="btn"
+            onClick={onOrganizza}
+            disabled={nodes.length === 0}
+          >
+            Organizza
+          </button>
+        )}
         <details className="toolbar__menu">
           <summary className={ricerca || filtro !== "tutti" || responsabile ? "has-filters" : ""}>
             Filtri

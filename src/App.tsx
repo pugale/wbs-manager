@@ -7,6 +7,7 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  ViewportPortal,
   useReactFlow,
   type Connection,
   type Edge,
@@ -33,6 +34,12 @@ import {
 import { deserializzaProgetto, serializzaProgetto } from "./services/projectService";
 import { creaValidatoreDipendenze } from "./utils/dependencyUtils";
 import { creaArchivioProgetto, creaVersione } from "./services/versioniProgetto";
+import {
+  A4_GAP_FOGLI,
+  capacitaFoglioA4,
+  DIMENSIONI_A4,
+  type OrientamentoA4
+} from "./utils/layoutA4";
 
 // Fuori dal componente per evitare re-render inutili
 const nodeTypes = { task: TaskNode };
@@ -69,6 +76,9 @@ type GrafoWorkspaceProps = {
   selectNode: (id: string | null) => void;
   erroreCollegamento: string | null;
   nodesCount: number;
+  mostraFogliA4: boolean;
+  orientamentoGrigliaA4: OrientamentoA4;
+  richiestaFitA4: number;
 };
 
 function GrafoWorkspace({
@@ -80,12 +90,21 @@ function GrafoWorkspace({
   validaDipendenza,
   selectNode,
   erroreCollegamento,
-  nodesCount
+  nodesCount,
+  mostraFogliA4,
+  orientamentoGrigliaA4,
+  richiestaFitA4
 }: GrafoWorkspaceProps) {
-  const { zoomTo, screenToFlowPosition } = useReactFlow();
+  const { fitView, zoomTo, screenToFlowPosition } = useReactFlow();
   const addTask = useWbsStore((s) => s.addTask);
   const [menuContestuale, setMenuContestuale] = useState<MenuContestuale | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const dimensioniA4 = DIMENSIONI_A4[orientamentoGrigliaA4];
+
+  useEffect(() => {
+    if (richiestaFitA4 === 0) return;
+    void fitView({ padding: 0.1, maxZoom: 0.8, duration: 300 });
+  }, [fitView, richiestaFitA4]);
 
   useEffect(() => {
     if (!menuContestuale) return;
@@ -178,6 +197,25 @@ function GrafoWorkspace({
         fitViewOptions={{ maxZoom: 1 }}
       >
         <Background gap={16} />
+        {mostraFogliA4 && (
+          <ViewportPortal>
+            {Array.from(
+              { length: Math.max(1, Math.ceil(nodesCount / capacitaFoglioA4(orientamentoGrigliaA4))) },
+              (_, indice) => (
+                <div
+                  key={indice}
+                  className="a4-sheet"
+                  aria-hidden="true"
+                  style={{
+                    left: indice * (dimensioniA4.larghezza + A4_GAP_FOGLI),
+                    width: dimensioniA4.larghezza,
+                    height: dimensioniA4.altezza
+                  }}
+                />
+              )
+            )}
+          </ViewportPortal>
+        )}
         <Controls>
           <ControlButton
             className="react-flow__controls-zoom100"
@@ -266,6 +304,10 @@ function GrafoWorkspace({
 
 export default function App() {
   const [visualizzazione, setVisualizzazione] = useState<"grafo" | "gantt" | "risorse">("grafo");
+  const [mostraFogliA4, setMostraFogliA4] = useState(false);
+  const [orientamentoGrigliaA4, setOrientamentoGrigliaA4] =
+    useState<OrientamentoA4>("orizzontale");
+  const [richiestaFitA4, setRichiestaFitA4] = useState(0);
   const [ricerca, setRicerca] = useState("");
   const [filtro, setFiltro] = useState<FiltroTask>("tutti");
   const [responsabile, setResponsabile] = useState("");
@@ -580,6 +622,15 @@ export default function App() {
       <Toolbar
         visualizzazione={visualizzazione}
         onVisualizzazioneChange={setVisualizzazione}
+        mostraFogliA4={mostraFogliA4}
+        onMostraFogliA4Change={setMostraFogliA4}
+        orientamentoGrigliaA4={orientamentoGrigliaA4}
+        onOrientamentoGrigliaA4Change={setOrientamentoGrigliaA4}
+        onOrganizza={() => {
+          useWbsStore.getState().organizzaNodi("verticale");
+          setMostraFogliA4(true);
+          setRichiestaFitA4((richiesta) => richiesta + 1);
+        }}
         tipoFreccia={tipoFreccia}
         onTipoFrecciaChange={(tipo: TipoFreccia) => useWbsStore.getState().setTipoFreccia(tipo)}
         ricerca={ricerca}
@@ -640,6 +691,9 @@ export default function App() {
                 selectNode={selectNode}
                 erroreCollegamento={erroreCollegamento}
                 nodesCount={nodes.length}
+                mostraFogliA4={mostraFogliA4}
+                orientamentoGrigliaA4={orientamentoGrigliaA4}
+                richiestaFitA4={richiestaFitA4}
               />
             </ReactFlowProvider>
           ) : (

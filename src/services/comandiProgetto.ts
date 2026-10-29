@@ -34,9 +34,16 @@ export async function nuovoProgetto() {
 }
 
 export async function apriProgetto() {
-  if (!(await confermaPerditaModifiche())) return;
   try {
-    const risultato = await api().apriProgetto();
+    const client = api();
+    let risultato: Awaited<ReturnType<ElectronAPI["apriProgetto"]>>;
+    if (client.ambiente === "web") {
+      risultato = await client.apriProgetto();
+      if (!risultato || !(await confermaPerditaModifiche())) return;
+    } else {
+      if (!(await confermaPerditaModifiche())) return;
+      risultato = await client.apriProgetto();
+    }
     if (!risultato) return; // l'utente ha annullato
     const contenuto = risultato.archivio
       ? risultato.archivio.contenutoCorrente

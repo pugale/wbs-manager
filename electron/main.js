@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { creaContenutoArchivio, creaManifest, leggiArchivio } from "./wbsmArchive.js";
 
 // In un modulo ES __dirname non esiste: lo ricostruiamo
@@ -24,9 +24,41 @@ const FILTRI_PDF = [{ name: "Documento PDF", extensions: ["pdf"] }];
 let win = null;
 let manualWin = null;
 let modificato = false;
+let ultimoPercorsoProgetto = null;
 
 function cartellaProgetti() {
   return path.join(app.getPath("documents"), "WBS Manager");
+}
+
+function fileUltimoPercorsoProgetto() {
+  return path.join(app.getPath("userData"), "ultimo-percorso-progetto.txt");
+}
+
+async function caricaUltimoPercorsoProgetto() {
+  try {
+    const percorso = await readFile(fileUltimoPercorsoProgetto(), "utf-8");
+    if (percorso && path.isAbsolute(percorso)) ultimoPercorsoProgetto = percorso;
+  } catch (errore) {
+    if (errore?.code !== "ENOENT") throw errore;
+  }
+}
+
+async function memorizzaPercorsoProgetto(percorso) {
+  await writeFile(fileUltimoPercorsoProgetto(), percorso, "utf-8");
+  ultimoPercorsoProgetto = percorso;
+}
+
+async function cartellaPredefinitaProgetto() {
+  if (ultimoPercorsoProgetto) {
+    const cartella = path.dirname(ultimoPercorsoProgetto);
+    try {
+      const informazioni = await stat(cartella);
+      if (informazioni.isDirectory()) return cartella;
+    } catch (errore) {
+      if (errore?.code !== "ENOENT" && errore?.code !== "ENOTDIR") throw errore;
+    }
+  }
+  return cartellaProgetti();
 }
 
 // Toglie i caratteri non ammessi nei nomi file di Windows
@@ -141,7 +173,7 @@ ipcMain.handle("progetto:apri", async () => {
   await mkdir(cartellaProgetti(), { recursive: true });
   const risultato = await dialog.showOpenDialog(win, {
     title: "Apri progetto",
-    defaultPath: cartellaProgetti(),
+    defaultPath: await cartellaPredefinitaProgetto(),
     filters: FILTRI,
     properties: ["openFile"]
   });
@@ -150,11 +182,14 @@ ipcMain.handle("progetto:apri", async () => {
   const percorso = risultato.filePaths[0];
   const contenuto = await readFile(percorso);
   if (path.extname(percorso).toLowerCase() === ".wbsm") {
-    return { percorso, archivio: leggiArchivio(contenuto) };
+    const archivio = leggiArchivio(contenuto);
+    await memorizzaPercorsoProgetto(percorso);
+    return { percorso, archivio };
   }
   if (path.extname(percorso).toLowerCase() !== ".json") {
     throw new Error("Estensione progetto non supportata. Apri un file .wbsm o .json.");
   }
+  await memorizzaPercorsoProgetto(percorso);
   return { percorso, contenuto: contenuto.toString("utf-8"), archivio: null };
 });
 
@@ -224,7 +259,10 @@ ipcMain.handle("progetto:salva", async (_event, { percorso, contenuto, nomeSugge
     await mkdir(cartellaProgetti(), { recursive: true });
     const risultato = await dialog.showSaveDialog(win, {
       title: "Salva progetto",
-      defaultPath: path.join(cartellaProgetti(), `${nomeFile(nomeSuggerito)}.wbsm`),
+      defaultPath: path.join(
+        await cartellaPredefinitaProgetto(),
+        `${nomeFile(nomeSuggerito)}.wbsm`
+      ),
       filters: FILTRI
     });
     if (risultato.canceled || !risultato.filePath) return null;
@@ -255,6 +293,7 @@ ipcMain.handle("progetto:salva", async (_event, { percorso, contenuto, nomeSugge
   const temporaneo = `${destinazione}.tmp`;
   await writeFile(temporaneo, datiDaScrivere);
   await rename(temporaneo, destinazione);
+  await memorizzaPercorsoProgetto(destinazione);
   return { percorso: destinazione, archivio: archivioSalvato };
 });
 
@@ -289,7 +328,14 @@ ipcMain.on("progetto:modificato", (_event, valore) => {
 
 // ---------- Ciclo di vita dell'app ----------
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  try {
+    await caricaUltimoPercorsoProgetto();
+  } catch (errore) {
+    const dettaglio = errore instanceof Error ? errore.message : String(errore);
+    dialog.showErrorBox("Impossibile ripristinare la cartella dell'ultimo progetto", dettaglio);
+  }
+
   // Nella versione installata niente menu: evita Ctrl+R che ricarica e perde i dati
   if (!isDev) Menu.setApplicationMenu(null);
   createWindow();
